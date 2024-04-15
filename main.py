@@ -20,15 +20,14 @@ SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Roche, papier, ciseaux"
 SCREEN_SUBTITLE_UN = "Appuyer sur une image pour faire une attaque!"
 SCREEN_SUBTITLE_DEUX = "Appuyer sur 'ESPACE' pour commencer une nouvelle ronde!"
-SCREEN_SUBTITLE_TROIS = "Vous avez gagné la partie! \
-                        La partie est terminée.  \
-                        Appuyer sur 'ESPACE' pour débuter une nouvelle partie!"
-DEFAULT_LINE_HEIGHT = 45  # The default line height for text.
+SCREEN_SUBTITLE_TROIS = "Vous avez gagné la partie! La partie est" \
+                        " terminée. Appuyer sur 'ESPACE' pour débuter une nouvelle partie!"
+DEFAULT_LINE_HEIGHT = 40  # The default line height for text.
 
 
 class MyGame(arcade.Window):
    """
-   La classe principale de l'applicationz
+   La classe principale de l'application
 
    NOTE: Vous pouvez effacer les méthodes que vous n'avez pas besoin.
    Si vous en avez besoin, remplacer le mot clé "pass" par votre propre code.
@@ -64,7 +63,7 @@ class MyGame(arcade.Window):
        self.player_attack_chosen = False
        self.player_won_round = None
        self.draw_round = None
-       self.game_state = GameState
+       self.game_state = GameState.NOT_STARTED
        self.pc_attack = None
 
 
@@ -111,29 +110,46 @@ class MyGame(arcade.Window):
        """
 
        if self.player_attack_type == attack_animation.AttackType.ROCK and self.computer_attack_type == AttackType.ROCK:
-           game_state.GameState.ROUND_DONE
+           self.draw_round = True
+           self.player_won_round = False
 
        elif self.player_attack_type == attack_animation.AttackType.PAPER and self.computer_attack_type == AttackType.PAPER:
-           game_state.GameState.ROUND_DONE
+           self.draw_round = True
+           self.player_won_round = False
 
        elif self.player_attack_type == attack_animation.AttackType.SCISSORS and self.computer_attack_type == AttackType.SCISSORS:
-           game_state.GameState.ROUND_DONE
+           self.draw_round = True
+           self.player_won_round = False
+
 
        elif self.player_attack_type == attack_animation.AttackType.PAPER and self.computer_attack_type == AttackType.ROCK:
            self.player_won_round = True
            self.player_score += 1
-           game_state.GameState.ROUND_DONE
+
 
        elif self.player_attack_type == attack_animation.AttackType.SCISSORS and self.computer_attack_type == AttackType.PAPER:
            self.player_won_round = True
            self.player_score += 1
-           game_state.GameState.ROUND_DONE
+
 
        elif self.player_attack_type == attack_animation.AttackType.ROCK and self.computer_attack_type == AttackType.SCISSORS:
            self.player_won_round = True
            self.player_score += 1
-           game_state.GameState.ROUND_DONE
 
+
+
+       elif self.player_attack_type == attack_animation.AttackType.ROCK and self.computer_attack_type == AttackType.PAPER:
+           self.computer_score += 1
+           self.player_won_round = False
+
+
+       elif self.player_attack_type == attack_animation.AttackType.PAPER and self.computer_attack_type == AttackType.SCISSORS:
+           self.computer_score += 1
+           self.player_won_round = False
+
+       elif self.player_attack_type == attack_animation.AttackType.SCISSORS and self.computer_attack_type == AttackType.ROCK:
+           self.computer_score += 1
+           self.player_won_round = False
 
 
 
@@ -188,7 +204,6 @@ class MyGame(arcade.Window):
                self.paper_compy.draw()
 
            else:
-               self.scissors.center_x = 745
                self.scissors_compy.draw()
 
    def draw_scores(self):
@@ -220,6 +235,7 @@ class MyGame(arcade.Window):
                             align = "center")
 
        arcade.draw_text("Le pointage de l'ordinateur est 0",
+                            self.computer_score,
                             485,
                             60,
                             arcade.color.AERO_BLUE,
@@ -227,7 +243,8 @@ class MyGame(arcade.Window):
                             width = 500,
                             align = "center")
 
-       if self.game_state == 1:
+
+       if self.game_state == GameState.NOT_STARTED:
            arcade.draw_text(SCREEN_SUBTITLE_UN,
                                     0,
                                     SCREEN_HEIGHT - DEFAULT_LINE_HEIGHT * 4,
@@ -236,7 +253,7 @@ class MyGame(arcade.Window):
                                     width=SCREEN_WIDTH,
                                     align="center")
 
-       elif self.game_state == 2:
+       elif self.game_state == GameState.ROUND_DONE:
            arcade.draw_text(SCREEN_SUBTITLE_DEUX,
                             0,
                             SCREEN_HEIGHT - DEFAULT_LINE_HEIGHT * 4,
@@ -245,7 +262,7 @@ class MyGame(arcade.Window):
                             width=SCREEN_WIDTH,
                             align="center")
 
-       elif self.game_state == 3:
+       elif self.game_state == GameState.GAME_OVER:
            arcade.draw_text(SCREEN_SUBTITLE_TROIS,
                             0,
                             SCREEN_HEIGHT - DEFAULT_LINE_HEIGHT * 4,
@@ -304,19 +321,17 @@ class MyGame(arcade.Window):
        if self.game_state == game_state.GameState.ROUND_ACTIVE:
            if self.player_attack_chosen == True:
                pc_attack = random.randint(0, 2)
+
                if pc_attack == 0:
                    self.computer_attack_type = AttackType.ROCK
+
                elif pc_attack == 1:
                    self.computer_attack_type = AttackType.PAPER
+
                else:
                    self.computer_attack_type = AttackType.SCISSORS
 
-           else:
-               pass
-       else:
-           pass
-
-
+           self.game_state = GameState.ROUND_DONE
 
        pass
 
@@ -333,10 +348,19 @@ class MyGame(arcade.Window):
        http://arcade.academy/arcade.key.html
        """
 
-       self.gamestate = Enum('GameState', ['NOT_STARTED', 'ROUND_ACTIVE', 'ROUND_DONE', 'GAME_OVER'])
-       self.game_state += 1
+       if self.game_state == GameState.NOT_STARTED:
+           self.reset_round()
+           self.game_state = game_state.GameState.ROUND_ACTIVE
 
-       pass
+
+
+       elif self.game_state == GameState.ROUND_DONE:
+           self.reset_round()
+           self.game_state = game_state.GameState.ROUND_ACTIVE
+
+       elif self.game_state == GameState.GAME_OVER:
+           self.setup()
+           self.game_state = game_state.GameState.NOT_STARTED
 
    def reset_round(self):
        """
