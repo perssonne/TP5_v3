@@ -412,6 +412,9 @@ class MyGame(arcade.Window):
                self.validate_victory()
                self.game_state = GameState.ROUND_DONE
 
+       self.rock.update_animation()
+       self.scissors.update_animation()
+       self.paper.update_animation()
 
    def on_key_press(self, key, key_modifiers):
 
