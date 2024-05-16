@@ -2,9 +2,11 @@ import arcade
 from enum import Enum
 
 class AttackType(Enum):
+
    """
    Simple énumération pour représenter les différents types d'attaques.
    """
+
    ROCK = 0
    PAPER = 1
    SCISSORS = 2
@@ -16,13 +18,30 @@ class AttackAnimation(arcade.Sprite):
    def __init__(self, attack_type):
        super().__init__()
 
-       self.attack_type = attack_type
-       if self.attack_type == AttackType.ROCK:
+       self.player_attack_type = attack_type
+       if self.player_attack_type == AttackType.ROCK:
            self.textures = [
                arcade.load_texture("assets/srock.png"),
                arcade.load_texture("assets/srock-attack.png"),
            ]
-       elif self.attack_type == AttackType.PAPER:
+       elif self.player_attack_type == AttackType.PAPER:
+           self.textures = [
+               arcade.load_texture("assets/spaper.png"),
+               arcade.load_texture("assets/spaper-attack.png"),
+           ]
+       else:
+           self.textures = [
+               arcade.load_texture("assets/scissors.png"),
+               arcade.load_texture("assets/scissors-close.png"),
+           ]
+
+       self.computer_attack_type = attack_type
+       if self.computer_attack_type == AttackType.ROCK:
+           self.textures = [
+               arcade.load_texture("assets/srock.png"),
+               arcade.load_texture("assets/srock-attack.png"),
+           ]
+       elif self.computer_attack_type == AttackType.PAPER:
            self.textures = [
                arcade.load_texture("assets/spaper.png"),
                arcade.load_texture("assets/spaper-attack.png"),
